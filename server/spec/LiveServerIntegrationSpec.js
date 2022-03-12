@@ -65,5 +65,30 @@ describe('server', function() {
     });
   });
 
+  it('Should 405 when asked on requests other than GET, OPTIONS, POST', function(done) {
+    var requestParams = {
+      method: 'PUT',
+      uri: 'http://127.0.0.1:3000/classes/messages'
+    };
+
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(405);
+      done();
+    });
+  });
+
+  it('Should return options when given OPTIONS request', function(done) {
+    var requestParams = {
+      method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages'
+    };
+
+    request(requestParams, function(error, response, body) {
+      expect(body).to.equal('Allow: GET, POST, OPTIONS');
+      expect(response.statusCode).to.equal(200);
+      done();
+    });
+  });
+
 
 });

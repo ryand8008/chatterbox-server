@@ -78,6 +78,10 @@ var requestHandler = function(request, response) {
   const { url, headers } = request;
   let data = { headers: defaultCorsHeaders };
 
+  var endResponse = () => {
+    response.writeHead(data.statusCode, data.headers);
+    response.end(data.end);
+  };
 
   if (url === '/classes/messages') {
     if (request.method === 'GET') {
@@ -88,7 +92,6 @@ var requestHandler = function(request, response) {
 
       data.statusCode = 201;
       data.headers['Content-Type'] = 'application/json';
-      data.end = '';
 
       let bodyData = '';
       request.on('data', chunk => {
@@ -98,9 +101,12 @@ var requestHandler = function(request, response) {
         if (bodyData.length > 0) {
           bodyData = JSON.parse(bodyData);
 
+          bodyData.message_id = storage.length + 1;
           storage.unshift(bodyData);
 
-          data.end = JSON.stringify(bodyData);
+          data.end = JSON.stringify(storage);
+
+          endResponse();
         }
       });
     } else if (request.method === 'OPTIONS') {
@@ -120,8 +126,9 @@ var requestHandler = function(request, response) {
     data.end = 'Hello, World!';
   }
 
-  response.writeHead(data.statusCode, data.headers);
-  response.end(data.end);
+  if (url !== '/classes/messages' || request.method !== 'POST') {
+    endResponse();
+  }
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
