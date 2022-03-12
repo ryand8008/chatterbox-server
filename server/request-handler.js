@@ -54,20 +54,7 @@ var getOptions = function(data) {
   data.statusCode = 200;
 };
 
-var getMessages = function(data) {
-  data.headers['Content-Type'] = 'application/json';
-  data.end = JSON.stringify(storage);
-  data.statusCode = 200;
-};
-
 var postMessage = function(data, body) {
-  if (body['username'] && body['text']) {
-    storage.unshift(body);
-
-    data.statusCode = 201;
-    data.headers['Content-Type'] = 'application/json';
-    data.end = JSON.stringify(body);
-  }
 };
 
 var requestHandler = function(request, response) {
@@ -91,21 +78,27 @@ var requestHandler = function(request, response) {
   const { url, headers } = request;
   let data = { headers: defaultCorsHeaders };
 
-  let bodyData = [];
+  let bodyData = '';
   request.on('data', chunk => {
-    bodyData.push(chunk);
+    bodyData += chunk;
   });
   request.on('end', () => {
     if (bodyData.length > 0) {
-      bodyData = JSON.parse(Buffer.concat(bodyData).toString());
+      bodyData = JSON.parse(bodyData);
     }
     // console.log(bodyData);
 
     if (url === '/classes/messages') {
       if (request.method === 'GET') {
-        getMessages(data);
+        data.headers['Content-Type'] = 'application/json';
+        data.end = JSON.stringify(storage);
+        data.statusCode = 200;
       } else if (request.method === 'POST') {
-        postMessage(data, bodyData);
+        storage.unshift(bodyData);
+
+        data.statusCode = 201;
+        data.headers['Content-Type'] = 'application/json';
+        data.end = JSON.stringify(bodyData);
       } else if (request.method === 'OPTIONS') {
         getOptions(data);
       } else {
