@@ -101,7 +101,7 @@ var requestHandler = function(request, response) {
         if (bodyData.length > 0) {
           bodyData = JSON.parse(bodyData);
 
-          bodyData.message_id = storage.length + 1;
+          bodyData['message_id'] = storage.length + 1;
           storage.unshift(bodyData);
 
           data.end = JSON.stringify(storage);
