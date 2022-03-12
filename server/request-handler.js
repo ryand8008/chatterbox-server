@@ -90,10 +90,6 @@ var requestHandler = function(request, response) {
 
   const { url, headers } = request;
   let data = { headers: defaultCorsHeaders };
-  // parse destination out of url
-  let parsedUrl = url.split('?')[0];
-
-
 
   let bodyData = [];
   request.on('data', chunk => {
@@ -105,8 +101,7 @@ var requestHandler = function(request, response) {
     }
     // console.log(bodyData);
 
-    if (parsedUrl === '/classes/messages' ||
-        parsedUrl === '/classes/messages/') {
+    if (url === '/classes/messages') {
       if (request.method === 'GET') {
         getMessages(data);
       } else if (request.method === 'POST') {
