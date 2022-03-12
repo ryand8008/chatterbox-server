@@ -78,48 +78,50 @@ var requestHandler = function(request, response) {
   const { url, headers } = request;
   let data = { headers: defaultCorsHeaders };
 
-  let bodyData = '';
-  request.on('data', chunk => {
-    bodyData += chunk;
-  });
-  request.on('end', () => {
-    if (bodyData.length > 0) {
-      bodyData = JSON.parse(bodyData);
-    }
-    // console.log(bodyData);
 
-    if (url === '/classes/messages') {
-      if (request.method === 'GET') {
-        data.headers['Content-Type'] = 'application/json';
-        data.end = JSON.stringify(storage);
-        data.statusCode = 200;
-      } else if (request.method === 'POST') {
-        storage.unshift(bodyData);
+  if (url === '/classes/messages') {
+    if (request.method === 'GET') {
+      data.headers['Content-Type'] = 'application/json';
+      data.end = JSON.stringify(storage);
+      data.statusCode = 200;
+    } else if (request.method === 'POST') {
 
-        data.statusCode = 201;
-        data.headers['Content-Type'] = 'application/json';
-        data.end = JSON.stringify(bodyData);
-      } else if (request.method === 'OPTIONS') {
-        getOptions(data);
-      } else {
-        // The outgoing status.
-        data.statusCode = 405;
+      data.statusCode = 201;
+      data.headers['Content-Type'] = 'application/json';
+      data.end = '';
 
-        data.headers['Content-Type'] = 'text/plain';
-        data.end = 'Method not allowed';
-      }
+      let bodyData = '';
+      request.on('data', chunk => {
+        bodyData += chunk;
+      });
+      request.on('end', () => {
+        if (bodyData.length > 0) {
+          bodyData = JSON.parse(bodyData);
+
+          storage.unshift(bodyData);
+
+          data.end = JSON.stringify(bodyData);
+        }
+      });
+    } else if (request.method === 'OPTIONS') {
+      getOptions(data);
     } else {
       // The outgoing status.
-      data.statusCode = 404;
+      data.statusCode = 405;
 
       data.headers['Content-Type'] = 'text/plain';
-      data.end = 'Hello, World!';
+      data.end = 'Method not allowed';
     }
+  } else {
+    // The outgoing status.
+    data.statusCode = 404;
 
-    response.writeHead(data.statusCode, data.headers);
-    response.end(data.end);
-  });
+    data.headers['Content-Type'] = 'text/plain';
+    data.end = 'Hello, World!';
+  }
 
+  response.writeHead(data.statusCode, data.headers);
+  response.end(data.end);
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
